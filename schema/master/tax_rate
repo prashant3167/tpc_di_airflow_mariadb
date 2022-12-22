@@ -1,0 +1,5 @@
+CREATE TABLE master.tax_rate (
+    TX_ID CHAR(4) NOT NULL,
+    TX_NAME CHAR(50) NOT NULL,
+    TX_RATE NUMERIC(6, 5) NOT NULL
+);

@@ -1,0 +1,18 @@
+CREATE TABLE staging.trade_historical(
+      CDC_FLAG CHAR(1),
+      CDC_DSN NUMERIC(12),
+      T_ID NUMERIC(15),
+      T_DTS DATETIME,
+      T_ST_ID CHAR(4),
+      T_TT_ID CHAR(3),
+      T_IS_CASH CHAR(3),
+      T_S_SYMB CHAR(15) NOT NULL,
+      T_QTY NUMERIC(6) NOT NULL,
+      T_BID_PRICE NUMERIC(8),
+      T_CA_ID NUMERIC(11),
+      T_EXEC_NAME CHAR(49),
+      T_TRADE_PRICE NUMERIC(8),
+      T_CHRG NUMERIC(10),
+      T_COMM NUMERIC(10),
+      T_TAX NUMERIC(10)
+    );

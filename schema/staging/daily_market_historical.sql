@@ -1,0 +1,8 @@
+CREATE TABLE staging.daily_market_historical(
+      DM_DATE DATE NOT NULL,
+      DM_S_SYMB CHAR(30) NOT NULL,
+      DM_CLOSE NUMERIC(4) NOT NULL,
+      DM_HIGH NUMERIC(4) NOT NULL,
+      DM_LOW NUMERIC(4) NOT NULL,
+      DM_VOL INTEGER NOT NULL
+);

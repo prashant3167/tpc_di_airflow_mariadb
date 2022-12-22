@@ -1,0 +1,1 @@
+CREATE TABLE staging.batch_date(batch_number NUMERIC(3), BatchDate DATE);
