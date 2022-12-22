@@ -2,31 +2,31 @@ DROP TABLE IF EXISTS master.fact_market_history;
 CREATE TABLE
     master.fact_market_history
 (
-    SK_SecurityID           INT64   NOT NULL,
-    --Surrogate key for SecurityID
-    SK_CompanyID            INT64   NOT NULL,
+    SK_SecurityID           INT   NOT NULL,
+    -- Surrogate key for SecurityID
+    SK_CompanyID            INT   NOT NULL,
     -- Surrogate key for CompanyID
-    SK_DateID               INT64   NOT NULL,
+    SK_DateID               INT   NOT NULL,
     -- Surrogate key for the date
-    PERatio                 NUMERIC,
+    PERatio                 FLOAT,
     -- Price to earnings per share ratio
-    Yield                   NUMERIC NOT NULL,
+    Yield                   FLOAT NOT NULL,
     -- Dividend to price ratio, as a percentage
-    FiftyTwoWeekHigh        NUMERIC NOT NULL,
+    FiftyTwoWeekHigh        FLOAT NOT NULL,
     -- Security highest price in last 52 weeks from this day
-    SK_FiftyTwoWeekHighDate INT64   NOT NULL,
+    SK_FiftyTwoWeekHighDate INT   NOT NULL,
     -- Earliest date on which the 52 week high price was set
-    FiftyTwoWeekLow         NUMERIC NOT NULL,
+    FiftyTwoWeekLow         FLOAT NOT NULL,
     -- Security lowest price in last 52 weeks from this day
-    SK_FiftyTwoWeekLowDate  INT64   NOT NULL,
+    SK_FiftyTwoWeekLowDate  INT   NOT NULL,
     -- Earliest date on which the 52 week low price was set
-    ClosePrice              NUMERIC NOT NULL,
+    ClosePrice              FLOAT NOT NULL,
     -- Security closing price on this day
-    DayHigh                 NUMERIC NOT NULL,
+    DayHigh                 FLOAT NOT NULL,
     -- Highest price for the security on this day
-    DayLow                  NUMERIC NOT NULL,
+    DayLow                  FLOAT NOT NULL,
     -- Lowest price for the security on this day
-    Volume                  INT64   NOT NULL,
+    Volume                  INT   NOT NULL,
     -- Trading volume of the security on this day
-    BatchID                 INT64   NOT NULL -- Batch ID when this record was inserted
+    BatchID                 INT   NOT NULL -- Batch ID when this record was inserted
 );

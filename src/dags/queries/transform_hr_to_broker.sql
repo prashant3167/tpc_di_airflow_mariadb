@@ -1,4 +1,3 @@
-insert into master.dim_broker
 WITH
     min_date AS (
         SELECT
