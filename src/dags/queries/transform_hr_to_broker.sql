@@ -1,3 +1,5 @@
+delete from {{ table }};
+INSERT into {{ table }};
 WITH
     min_date AS (
         SELECT

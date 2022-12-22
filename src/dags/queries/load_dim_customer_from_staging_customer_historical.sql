@@ -1,3 +1,7 @@
+
+delete from {{ table }};
+
+INSERT into {{ table }};
 SELECT CAST(CONCAT(DATE_FORMAT(c.EffectiveDate,'%Y%m%d'), '', CAST(c.CustomerID AS CHAR)) AS INT) AS SK_CustomerID,
        c.CustomerID                                               AS CustomerID,
        c.TaxID                                                    AS TaxID,
