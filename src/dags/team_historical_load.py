@@ -289,11 +289,6 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
     #     google_cloud_storage_conn_id=GOOGLE_CLOUD_DEFAULT,
     #     ignore_unknown_values=False
     # )
-    load_customer_management_staging = MySqlOperator(
-        task_id='load_customer_management_file_to_staging',
-        sql='queries'
-                      '/load_customer_records_from_customer_management.sql',
-        params={'table':'staging.customer_historical'})
 
     load_customer_from_customer_management = MySqlOperator(
         task_id='load_customer_from_customer_management',
@@ -334,7 +329,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
     customer_account_data_load_complete = EmptyOperator(task_id='customer_account_data_load_complete')
 
     # load_customer_management_pre_staging >> load_customer_management_staging
-    reference_data_load_complete >> [load_customer_management_staging, load_prospect_file_to_staging]
+    reference_data_load_complete >> [ load_prospect_file_to_staging]
 
     load_customer_management_pre_staging >> [load_customer_from_customer_management,
                                          load_account_historical_from_customer_management]

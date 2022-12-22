@@ -1,30 +1,30 @@
-CREATE TEMP FUNCTION
-  latest_value( history_of_values ANY TYPE) AS ( (
-    SELECT
-      excluding_nulls[ORDINAL(ARRAY_LENGTH(excluding_nulls))]
-    FROM (
-      SELECT
-        ARRAY_AGG(x IGNORE NULLS) AS excluding_nulls
-      FROM
-        UNNEST(history_of_values) x)) );
+-- CREATE TEMP FUNCTION
+--   latest_value( history_of_values ANY TYPE) AS ( (
+--     SELECT
+--       excluding_nulls[ORDINAL(ARRAY_LENGTH(excluding_nulls))]
+--     FROM (
+--       SELECT
+--         ARRAY_AGG(x IGNORE NULLS) AS excluding_nulls
+--       FROM
+--         UNNEST(history_of_values) x)) );
 
 
 
-delete from {{ table }};
+delete from {{ params.table }};
 
-INSERT into {{ table }}
+INSERT into {{ params.table }}
 WITH
     accounts AS (
         SELECT
-            Customer.ActionTYPE AS Action,
-            Customer.ActionTS AS effective_time_stamp,
-            Customer.attr_C_ID AS CustomerID,
-            Customer.Account.attr_CA_ID AS AccountID,
-            Customer.Account.CA_B_ID AS BrokerID,
-            Customer.Account.CA_NAME AS AccountDesc,
-            Customer.Account.attr_CA_TAX_ST AS TaxStatus,
+            Action,
+            effective_time_stamp,
+            CustomerID,
+            AccountID,
+            BrokerID,
+            AccountDesc,
+            TaxStatus,
             CASE
-                WHEN Customer.ActionTYPE IN ("INACT", "CLOSEACCT") THEN "INACTIVE"
+                WHEN Action IN ("INACT", "CLOSEACCT") THEN "INACTIVE"
                 ELSE
                     "ACTIVE"
                 END
@@ -32,7 +32,7 @@ WITH
         FROM
             staging.customer_management
         WHERE
-                Customer.ActionTYPE IN ("NEW",
+                Action IN ("NEW",
                                         "ADDACCT",
                                         "UPDACCT",
                                         "CLOSEACCT",
@@ -40,32 +40,34 @@ WITH
     inactive_date AS (
         SELECT
             CustomerID,
-            DATE(effective_time_stamp) AS effective_date
+            STR_TO_DATE(effective_time_stamp,'%Y-%m-%d %H:%i:%s') AS effective_date
         FROM
             accounts
         WHERE
                 Action = "INACT"),
-    effective_account AS (
+    effective_account_temp AS (
         SELECT
             CustomerID,
             AccountID,
-            latest_value(ARRAY_AGG(BrokerID) OVER w) AS BrokerID,
-            latest_value(ARRAY_AGG(AccountDesc) OVER w) AS AccountDesc,
-            latest_value(ARRAY_AGG(TaxStatus) OVER w) AS TaxStatus,
+            BrokerID,
+            AccountDesc,
+            TaxStatus,
             Action,
             Status,
-            DATE(effective_time_stamp) AS EffectiveDate,
-            LEAD(DATE(effective_time_stamp), 1, DATE('9999-12-31')) OVER w AS EndDate
+            STR_TO_DATE(effective_time_stamp,'%Y-%m-%d %H:%i:%s') as EffectiveDate,
+            LEAD(STR_TO_DATE(effective_time_stamp,'%Y-%m-%d %H:%i:%s'), 1) OVER (
+            PARTITION BY
+            AccountID
+            ORDER BY
+            STR_TO_DATE(effective_time_stamp,'%Y-%m-%d %H:%i:%s') ASC) as EndDate
         FROM
             accounts
         WHERE
                 Action NOT IN ("INACT")
-    WINDOW
-    w AS (
-    PARTITION BY
-      AccountID
-    ORDER BY
-      effective_time_stamp ASC))
+            ),
+    effective_account AS(
+        SELECT CustomerID,AccountID,BrokerID,AccountDesc,TaxStatus,Action,Status,EffectiveDate,case when EndDate is NULL then DATE('9999-12-31') else EndDate end as "EndDate" from effective_account_temp
+    )
 SELECT
     acc.CustomerID,
     acc.AccountID,

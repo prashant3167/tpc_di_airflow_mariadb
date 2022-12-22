@@ -34,7 +34,7 @@ def prepare_char_insertion(field):
     if field == None:
         return ""
     if field == "''":
-        return field
+        return None
     # field = field.replace("'", "''")
     # field = field.replace('"', '\\"')
     return f"{field}"
@@ -116,9 +116,7 @@ def xml_to_csv(input_file, output_file):
                 C_F_NAME
             ) = (
                 C_M_NAME
-            ) = (
-                C_ADLINE1
-            ) = C_ADLINE2 = C_ZIPCODE = C_CITY = C_STATE_PROV = C_CTRY = "''"
+            ) = C_ADLINE1 = C_ADLINE2 = C_ZIPCODE = C_CITY = C_STATE_PROV = C_CTRY = ""
             try:
                 C_TAX_ID = prepare_char_insertion(action["Customer"]["@C_TAX_ID"])
             except:
@@ -290,7 +288,7 @@ def xml_to_csv(input_file, output_file):
                 )
             except:
                 pass
-            C_LCL_TX_ID = C_NAT_TX_ID = "''"
+            C_LCL_TX_ID = C_NAT_TX_ID = ""
             try:
                 C_LCL_TX_ID = prepare_char_insertion(
                     action["Customer"]["TaxInfo"]["C_LCL_TX_ID"]
@@ -300,28 +298,28 @@ def xml_to_csv(input_file, output_file):
                 )
             except:
                 pass
-            CA_ID = "''"
+            CA_ID = ""
             try:
                 CA_ID = prepare_numeric_insertion(
                     action["Customer"]["Account"]["@CA_ID"]
                 )
             except:
                 pass
-            CA_TAX_ST = "''"
+            CA_TAX_ST = ""
             try:
                 CA_TAX_ST = prepare_numeric_insertion(
                     action["Customer"]["Account"]["@CA_TAX_ST"]
                 )
             except:
                 pass
-            CA_B_ID = "''"
+            CA_B_ID = ""
             try:
                 CA_B_ID = prepare_numeric_insertion(
                     action["Customer"]["Account"]["CA_B_ID"]
                 )
             except:
                 pass
-            CA_NAME = "''"
+            CA_NAME = ""
             try:
                 CA_NAME = prepare_char_insertion(
                     action["Customer"]["Account"]["CA_NAME"]
@@ -490,4 +488,7 @@ def xml_to_csv(input_file, output_file):
         }
     )
     df["effective_time_stamp"] = pd.to_datetime(df["effective_time_stamp"])
-    df.to_csv(output_file,index=False)
+    df.to_csv(output_file, index=False, header=False, doublequote=True)
+
+
+# xml_to_csv('/Users/Licious/project/ulb/dw/di/data_3/Batch1/CustomerMgmt.xml','/Users/Licious/project/ulb/dw/di/data_3/Batch1/CustomerMgmt.csv')

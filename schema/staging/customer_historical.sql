@@ -1,5 +1,3 @@
-staging.customer_historical
-
 CREATE TABLE staging.customer_historical (
   `Action` text DEFAULT NULL,
   `EffectiveDate` datetime DEFAULT NULL,

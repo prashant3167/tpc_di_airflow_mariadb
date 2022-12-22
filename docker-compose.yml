@@ -7,7 +7,8 @@ services:
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
     scheduler:
-        image: pacific31/airflow:2.5
+        image: apache/airflow:2.5.0
+        # entrypoint: "airflow scheduler"
         command: scheduler
         # restart_policy:
         #     condition: on-failure
@@ -21,7 +22,7 @@ services:
             - /Users/Licious/project/ulb/dw/di/data_3:/staging
     webserver:
         image: pacific31/airflow:2.5
-        entrypoint: ./scripts/entrypoint.sh
+        entrypoint: /opt/airflow/scripts/entrypoint.sh
         # restart_policy:
         #     condition: on-failure
         depends_on:
@@ -30,7 +31,7 @@ services:
         env_file:
             - .env
         volumes:
-            - ./dags:/opt/airflow/dags
+            - ./src/dags:/opt/airflow/dags
             - ./logs:/opt/airflow/logs
             - ./scripts:/opt/airflow/scripts
         ports:
