@@ -8,6 +8,7 @@ services:
             - POSTGRES_DB=airflow
     scheduler:
         image: airflow:2.6
+        container_name: scheduler
         # entrypoint: "airflow scheduler"
         entrypoint: bash -c 'airflow db init; airflow scheduler'
         # entrypoint: /opt/airflow/scripts/entrypoint_scheduler.sh
@@ -26,7 +27,8 @@ services:
         #     - /Users/Licious/project/ulb/dw/di/data_3:/staging
         #     - ./scripts:/opt/airflow/scripts
     webserver:
-        image: airflow:2.6
+        image: pacific31/airflow:2.6
+        container_name: web
         entrypoint: /opt/airflow/scripts/entrypoint.sh
         # restart_policy:
         #     condition: on-failure
@@ -54,3 +56,8 @@ services:
     #         - ./logs:/opt/airflow/logs
     #         - ./scripts:/opt/airflow/scripts
     #     entrypoint: ["bash", "-c", "chmod -R 777 /opt/airflow/"]
+
+
+# docker cp  /Users/Licious/project/ulb/dw/di/data_3 new-webserver-1:/staging
+# docker cp {file} web:/staging
+# docker cp {file} scheduler:/staging
