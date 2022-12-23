@@ -7,7 +7,7 @@ services:
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
     scheduler:
-        image: airflow:2.6
+        image: pacific31/airflow:2.6
         container_name: scheduler
         # entrypoint: "airflow scheduler"
         entrypoint: bash -c 'airflow db init; airflow scheduler'
