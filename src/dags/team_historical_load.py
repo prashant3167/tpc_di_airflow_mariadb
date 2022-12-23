@@ -14,6 +14,7 @@ from utils import  get_file_path, insert_overwrite, reset_table, insert_if_empty
 from operators import LoadDataOperator,BulkLoadDataOperator
 
 from airflow.providers.mysql.operators.mysql import MySqlOperator
+from datetime import timedelta
 
 
 AIRFLOW = 'airflow'
@@ -24,13 +25,14 @@ default_args = {
     'start_date': datetime(2019, 11, 11),
     'email_on_failure': False,
     'email_on_retry': False,
-    'retries': 0,
-    'max_active_runs':4
+    'retries': 3,
+    'max_active_runs':2
 }
 
 with DAG('my_historical_load', schedule_interval=None, default_args=default_args) as dag:
     load_date_file_to_master = LoadDataOperator(
         task_id="load_date_to_master",
+        execution_timeout=timedelta(hours=3),
         db="master",
         table='dim_date',
         file=get_file_path(False,'Date'),
@@ -40,6 +42,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
 
     load_time_file_to_master = LoadDataOperator(
         task_id="load_time_to_master",
+        execution_timeout=timedelta(hours=3),
         db="master",
         table='dim_time',
         file=get_file_path(False,'Time'),
@@ -51,6 +54,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
         task_id="load_industry_to_master",
         db="master",
         table='industry',
+        execution_timeout=timedelta(hours=3),
         file=get_file_path(False,'Industry'),
         delimiter="|",
         columns="IN_ID,IN_NAME,IN_SC_ID"
@@ -60,6 +64,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
         task_id="load_status_type_to_master",
         db="master",
         table='status_type',
+        execution_timeout=timedelta(hours=3),
         file=get_file_path(False,'StatusType'),
         delimiter="|",
         columns="ST_ID,ST_NAME"
@@ -69,6 +74,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
         task_id="load_tax_rate_to_master",
         db="master",
         table='tax_rate',
+        execution_timeout=timedelta(hours=3),
         file=get_file_path(False,'TaxRate'),
         delimiter="|",
         columns="TX_ID,TX_NAME,TX_RATE"
@@ -78,6 +84,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
         task_id="load_trade_type_to_master",
         db="master",
         table='trade_type',
+        execution_timeout=timedelta(hours=3),
         file=get_file_path(False,'TradeType'),
         delimiter="|",
         columns="TT_ID,TT_NAME,TT_IS_SELL,TT_IS_MRKT"
@@ -87,12 +94,14 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
         task_id="load_hr_to_staging",
         db="staging",
         table='hr',
+        execution_timeout=timedelta(hours=3),
         file=get_file_path(False,'HR','csv'),
         delimiter=",",
         columns="EmployeeID,ManagerID,EmployeeFirstName,EmployeeLastName,EmployeeMI,EmployeeJobCode,EmployeeBranch,EmployeeOffice,EmployeePhone"
         )
 
     transform_hr_to_broker = MySqlOperator(task_id='transform_hr_to_broker',
+                                            execution_timeout=timedelta(hours=3),
                                               sql='queries/transform_load_dim_broker.sql')
 
     [load_date_file_to_master, load_hr_file_to_staging] >> transform_hr_to_broker
@@ -105,7 +114,8 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
         table='batch_date',
         file=get_file_path(False,'BatchDate'),
         delimiter="|",
-        columns="BatchDate"
+        columns="BatchDate",
+        execution_timeout=timedelta(hours=3),
         )
 
     reset_batch_number = reset_table(table_name='batch_number')
@@ -124,6 +134,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
         task_id="load_prospect_historical_to_staging",
         db="staging",
         table='prospect',
+        execution_timeout=timedelta(hours=3),
         file=get_file_path(False,'Prospect','csv'),
         delimiter=",",
         columns="AgencyID,LastName,FirstName,MiddleInitial,Gender,AddressLine1,AddressLine2,PostalCode,City,State,Country,Phone,Income,NumberCars,NumberChildren,MaritalStatus,Age,CreditRating,OwnOrRentFlag,Employer,NumberCreditCards,NetWorth"
@@ -133,6 +144,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
         task_id="load_trade_to_staging",
         db="staging",
         table='trade_historical',
+        execution_timeout=timedelta(hours=3),
         file=get_file_path(False,'Trade'),
         delimiter="|",
         columns="T_ID,T_DTS,T_ST_ID,T_TT_ID,T_IS_CASH,T_S_SYMB,T_QTY,T_BID_PRICE,T_CA_ID,T_EXEC_NAME,T_TRADE_PRICE,T_CHRG,T_COMM,T_TAX"
@@ -142,6 +154,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
 
     load_trade_history_to_staging = LoadDataOperator(
         task_id="load_trade_history_to_staging",
+        execution_timeout=timedelta(hours=3),
         db="staging",
         table='trade_history_historical',
         file=get_file_path(False,'TradeHistory'),
@@ -151,6 +164,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
     
     load_cash_transactions_to_staging = LoadDataOperator(
         task_id="load_cash_transactions_to_staging",
+        execution_timeout=timedelta(hours=3),
         db="staging",
         table='cash_transaction_historical',
         file=get_file_path(False,'CashTransaction'),
@@ -160,6 +174,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
 
     load_holding_history_historical_to_staging = LoadDataOperator(
         task_id='load_holding_history_historical_to_staging',
+        execution_timeout=timedelta(hours=3),
         db="staging",
         table='holding_history_historical',
         file=get_file_path(False,'HoldingHistory'),
@@ -172,6 +187,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
     load_watch_history_historical_to_staging = LoadDataOperator(
         task_id='load_watch_history_historical_to_staging',
         db="staging",
+        execution_timeout=timedelta(hours=3),
         table='watch_history_historical',
         file=get_file_path(False,'WatchHistory'),
         delimiter="|",
@@ -181,6 +197,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
     load_daily_market_to_staging = LoadDataOperator(
         task_id='load_daily_market_to_staging',
         db="staging",
+        execution_timeout=timedelta(hours=3),
         table='daily_market_historical',
         file=get_file_path(False,'DailyMarket'),
         delimiter="|",
@@ -196,35 +213,41 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
     # download_customer_management = BashOperator(task_id='download_customer_mangement_xml_to_worker',
     #                                             bash_command='rm -rf /home/airflow/gcs/data/CustomerMgmt.xml && gsutil cp gs://tpc-di_data/historical/CustomerMgmt.xml /home/airflow/gcs/data/')
 
+    reset_staging_customer_management = reset_table(table_name='staging_customer_management')
     transform_file_customer_management = PythonOperator(
         task_id='convert_xml_to_csv',
+        execution_timeout=timedelta(hours=3),
         python_callable=xml_to_csv,
         op_kwargs={"input_file":get_file_path(False,"CustomerMgmt", "xml"),"output_file":get_file_path(False,"CustomerMgmt", "csv")},
     )
+    reset_staging_customer_management >> transform_file_customer_management
 
-    load_customer_management_pre_staging = LoadDataOperator(
-        task_id='load_customer_management_to_pre_staging',
-        db="staging",
-        table='customer_management',
-        file=get_file_path(False,"CustomerMgmt", "csv"),
-        delimiter=",",
-        columns="Action,effective_time_stamp,CustomerID,TAXID,Gender,TIER,DOB,LastName,FirstName,MiddleInitial,AddressLine1,AddressLine2,PostalCode,City,State_Prov,Country,Email1,Email2,LocalTaxID,NationalTaxID,AccountID,TaxStatus,BrokerID,AccountDesc,Phone1,Phone2,Phone3,Status"
-    )
+    # load_customer_management_pre_staging = LoadDataOperator(
+    #     task_id='load_customer_management_to_pre_staging',
+    #     execution_timeout=timedelta(hours=3),
+    #     db="staging",
+    #     table='customer_management',
+    #     file=get_file_path(False,"CustomerMgmt", "csv"),
+    #     delimiter=",",
+    #     columns="Action,effective_time_stamp,CustomerID,TAXID,Gender,TIER,DOB,LastName,FirstName,MiddleInitial,AddressLine1,AddressLine2,PostalCode,City,State_Prov,Country,Email1,Email2,LocalTaxID,NationalTaxID,AccountID,TaxStatus,BrokerID,AccountDesc,Phone1,Phone2,Phone3,Status"
+    # )
     
     # BashOperator(task_id='upload_json_to_data_store',
     #                                                bash_command='gsutil -m cp -R /home/airflow/gcs/data/CustomerMgmt.json gs://tpc-di_data/historical/')
 
     # download_customer_management >> 
-    transform_file_customer_management >> load_customer_management_pre_staging
+    # transform_file_customer_management >> load_customer_management_pre_staging
 
     # Load FINWIRE to master dimensions
     load_finwire_staging = BulkLoadDataOperator(
         task_id='load_finwire_files_to_staging',
-        base_path="/staging/batch/FINWIRE*",
+        execution_timeout=timedelta(hours=3),
+        base_path="/staging/Batch1/",
         db="staging",
-        columns="row",
+        columns="ROW",
         table='finwire',
         delimiter=','
+
     )
 
     load_cmp_records_staging = MySqlOperator(task_id='extract_cmp_records_from_finwire',
@@ -232,6 +255,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
                                                 params ={'table':'staging.cmp_records'})
 
     load_dim_company_from_cmp_records = MySqlOperator(task_id='load_dim_company_from_cmp_records',
+                                                            execution_timeout=timedelta(hours=3),
                                                         sql='queries/load_cmp_records_to_dim_company.sql',
                                                         params={'table':'master.dim_company'})
 
@@ -309,16 +333,19 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
 
     load_dim_customer_from_staging_customer_historical = MySqlOperator(
         task_id='load_dim_customer_from_staging_customer_historical',
+        execution_timeout=timedelta(hours=3),
         sql='queries/load_dim_customer_from_staging_customer_historical.sql',
         params={'table':'master.dim_customer'})
 
     load_dim_account_from_staging_account_historical = MySqlOperator(
         task_id='load_dim_account_from_staging_account_historical',
+        execution_timeout=timedelta(hours=3),
         sql='queries/load_dim_account_from_staging_account_historical.sql',
         params={'table':'master.dim_account'})
 
     process_error_customer_historical_records = MySqlOperator(
         task_id='process_error_customer_historical_records',
+        execution_timeout=timedelta(hours=3),
         sql="queries/process_customer_historical_error.sql")
 
     recreate_prospect = reset_table('prospect')
@@ -331,7 +358,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
     # load_customer_management_pre_staging >> load_customer_management_staging
     reference_data_load_complete >> [ load_prospect_file_to_staging]
 
-    load_customer_management_pre_staging >> [load_customer_from_customer_management,
+    transform_file_customer_management >> [load_customer_from_customer_management,
                                          load_account_historical_from_customer_management]
 
     [load_customer_from_customer_management,
@@ -358,6 +385,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
     recreate_dim_trade = reset_table('dim_trade')
 
     load_dim_trade_from_historical = MySqlOperator(task_id="load_dim_trade_from_historical",
+                                                    execution_timeout=timedelta(hours=3),
                                                      sql="queries/load_trade_historical_to_dim_trade.sql",
                                                      params={'table':'master.dim_trade'})
 
@@ -379,6 +407,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
 
     load_fact_cash_balances_from_staging_history = MySqlOperator(
         task_id="load_fact_cash_balances_from_staging_history",
+        execution_timeout=timedelta(hours=3),
         sql='queries/load_cash_balances_historical_to_dim_cash_balances.sql',
         params={'table':'master.fact_cash_balances'})
 
@@ -387,6 +416,7 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
 
     load_fact_holding_from_staging_history = MySqlOperator(
         task_id="load_fact_holding_from_staging_history",
+        execution_timeout=timedelta(hours=3),
         sql='queries/load_holdings_historical_to_fact_holdings.sql',
         params={'table':'master.fact_holdings'})
 
@@ -395,12 +425,14 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
 
     load_fact_watches_from_staging_watch_history = MySqlOperator(
         task_id="load_fact_watches_from_staging_watch_history",
+        execution_timeout=timedelta(hours=3),
         sql='queries/load_watch_history_historical_to_fact_watches.sql',
         params={'table':'master.fact_watches'})
 
  
 
     create_intermediary_table_daily_market = MySqlOperator(task_id='transform_to_52_week_stats',
+                                                                execution_timeout=timedelta(hours=3),
                                                               sql='queries/transform_daily_market_historical_52_week.sql',
                                                                params={'table':'staging.daily_market_historical_transformed'})
 

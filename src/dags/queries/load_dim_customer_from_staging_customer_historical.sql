@@ -1,8 +1,5 @@
-delete from {{ table }};
-
-INSERT into {{ table }}
-SELECT CAST(CONCAT(FORMAT_DATE('%E4Y%m%d',
-                               c.EffectiveDate), '', CAST(c.CustomerID AS STRING)) AS INT64) AS SK_CustomerID,
+INSERT into {{ params.table }}
+SELECT CAST(CONCAT(DATE_FORMAT(c.EffectiveDate, '%Y%m%d'), CAST(c.CustomerID AS CHAR)) as int) as SK_CustomerID,
        c.CustomerID                                                                          AS CustomerID,
        c.TaxID                                                    AS TaxID,
        c.Status                                                   AS Status,
@@ -10,7 +7,7 @@ SELECT CAST(CONCAT(FORMAT_DATE('%E4Y%m%d',
        c.FirstName                                                AS FirstName,
        c.MiddleInitial                                            AS MiddleInitial,
        IF((UPPER(c.Gender)) IN ("M", "F"), UPPER(c.Gender), "U") AS Gender,
-       c.Tier                                                     AS Tier,
+       Tier                                 AS Tier,
        c.DOB                                                      AS DOB,
        c.AddressLine1                                             AS AddressLine1,
        c.AddressLine2                                             AS AddressLine2,

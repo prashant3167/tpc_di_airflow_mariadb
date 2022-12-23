@@ -2,10 +2,10 @@
 -- Refer to Page 30 -> 2.2.8
 -- Multi record is parsed to constituent tables here we have done it for CMP, for format look at table + plus data
 -- casting done for easy loading to Dimension table later
+-- DATE_FORMAT(c.EffectiveDate, '%Y%m%d-%H%M%S')
 insert into {{ table }}
 SELECT
-    PARSE_DATETIME('%E4Y%m%d-%H%M%S',
-                   SUBSTR(ROW, 1, 15)) AS PTS,
+    STR_TO_DATE(SUBSTR(ROW, 1, 15), '%Y%m%d-%H%i%S') AS PTS,
     TRIM(SUBSTR(ROW, 19, 60)) AS CompanyName,
     CAST(TRIM(SUBSTR(ROW, 79, 10)) AS INT64) AS CIK,
     TRIM(SUBSTR(ROW, 89, 4)) AS Status,
@@ -37,6 +37,6 @@ SELECT
     TRIM(SUBSTR(ROW, 348, 46)) AS CEOname,
     TRIM(SUBSTR(ROW, 394, 150)) AS Description
 FROM
-    staging.finwirex
+    staging.finwire
 WHERE
         TRIM(SUBSTR(ROW, 16, 3)) = 'CMP';

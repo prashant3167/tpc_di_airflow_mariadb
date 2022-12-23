@@ -1,29 +1,25 @@
-CREATE TEMPORARY FUNCTION
-  construct_MarketingNameplate(Income FLOAT64,
-    NumberCars FLOAT64,
-    NumberChildren FLOAT64,
-    Age FLOAT64,
-    CreditRating FLOAT64,
-    NumberCreditCards FLOAT64,
-    NetWorth FLOAT64)
-  RETURNS STRING
-  LANGUAGE js AS """
-result = [];
-if ((NetWorth !== null && NetWorth > 1000000) || (Income !== null && Income > 200000)) result.push("HighValue");
-if ((NumberChildren !== null && NumberChildren > 3) || (NumberCreditCards !== null && NumberCreditCards > 5)) result.push("Expenses");
-if ((Income !== null && Income < 50000) || (CreditRating !== null && CreditRating < 600) || (NetWorth !== null && NetWorth < 100000)) result.push("MoneyAlert");
-if ((NumberCars !== null && NumberCars > 3) || (NumberCreditCards !== null && NumberCreditCards > 7)) result.push("Spender");
-if ((Age !== null && Age < 25) && (NetWorth != null && NetWorth > 1000000)) result.push("Inherited");
-if (result.length == 0)
-    return null;
-return result.join("+");
-    """;
+-- CREATE TEMPORARY FUNCTION
+--   construct_MarketingNameplate(Income FLOAT64,
+--     NumberCars FLOAT64,
+--     NumberChildren FLOAT64,
+--     Age FLOAT64,
+--     CreditRating FLOAT64,
+--     NumberCreditCards FLOAT64,
+--     NetWorth FLOAT64)
+--   RETURNS STRING
+--   LANGUAGE js AS """
+-- result = [];
+-- if ((NetWorth !== null && NetWorth > 1000000) || (Income !== null && Income > 200000)) result.push("HighValue");
+-- if ((NumberChildren !== null && NumberChildren > 3) || (NumberCreditCards !== null && NumberCreditCards > 5)) result.push("Expenses");
+-- if ((Income !== null && Income < 50000) || (CreditRating !== null && CreditRating < 600) || (NetWorth !== null && NetWorth < 100000)) result.push("MoneyAlert");
+-- if ((NumberCars !== null && NumberCars > 3) || (NumberCreditCards !== null && NumberCreditCards > 7)) result.push("Spender");
+-- if ((Age !== null && Age < 25) && (NetWorth != null && NetWorth > 1000000)) result.push("Inherited");
+-- if (result.length == 0)
+--     return null;
+-- return result.join("+");
+--     """;
 
-
-delete from {{ table }};
-
-
-INSERT into {{ table }}
+INSERT into  {{ params.table }}
 WITH
     batch_date AS (
         SELECT
@@ -61,13 +57,11 @@ SELECT
     p.Employer AS Employer,
     p.NumberCreditCards AS NumberCreditCards,
     p.NetWorth AS NetWorth,
-    construct_MarketingNameplate(p.Income,
-                                 p.NumberCars,
-                                 p.NumberChildren,
-                                 p.Age,
-                                 p.CreditRating,
-                                 p.NumberCreditCards,
-                                 p.NetWorth) AS MarketingNameplate
+    TRIM(LEADING '+' FROM concat(case when ((NetWorth is not NULL && NetWorth > 1000000) or (Income is not NULL && Income > 200000)) then "HighValue" else "" end,
+    case when ((NumberChildren is not NULL && NumberChildren > 3) or (NumberCreditCards is not NULL && NumberCreditCards > 5)) then "+Expenses" else "" end,
+    case when ((Income is not NULL && Income < 50000) || (CreditRating is not NULL && CreditRating < 600) || (NetWorth is not NULL && NetWorth < 100000)) then "+MoneyAlert" else NULL end,
+    case when ((NumberCars is not NULL  && NumberCars > 3) or (NumberCreditCards is not NULL && NumberCreditCards > 7)) then "+Spender" else "" end,
+    case when ((Age is not NULL && Age < 25) && (NetWorth is not NULL && NetWorth > 1000000)) then "+Inherited" else "" end)) AS MarketingNameplate
 FROM (staging.prospect p
     LEFT OUTER JOIN
     staging.customer_historical c

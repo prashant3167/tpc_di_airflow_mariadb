@@ -2,58 +2,58 @@ DROP TABLE IF EXISTS master.prospect;
 CREATE TABLE
     master.prospect
 (
-    AgencyID           STRING  NOT NULL,
+    AgencyID           TEXT  NOT NULL,
     -- Unique identifier from agency
-    SK_RecordDateID    INT64   NOT NULL,
+    SK_RecordDateID    bigint   NOT NULL,
     -- Last date this prospect appeared in input
-    SK_UpdateDateID    INT64   NOT NULL,
+    SK_UpdateDateID    bigint   NOT NULL,
     -- Latest change date for this prospect
-    BatchID            INT64   NOT NULL,
+    BatchID            bigint   NOT NULL,
     -- Batch ID when this record was last modified
     IsCustomer         BOOLEAN NOT NULL,
     -- True if this person is also in DimCustomer, else False
-    LastName           STRING  NOT NULL,
+    LastName           TEXT  NOT NULL,
     -- Last name
-    FirstName          STRING  NOT NULL,
+    FirstName          TEXT  NOT NULL,
     -- First name
-    MiddleInitial      STRING,
+    MiddleInitial      TEXT,
     -- Middle initial
-    Gender             STRING,
+    Gender             TEXT,
     -- M / F / U
-    AddressLine1       STRING,
+    AddressLine1       TEXT,
     -- Postal address
-    AddressLine2       STRING,
+    AddressLine2       TEXT,
     -- Postal address
-    PostalCode         STRING,
+    PostalCode         TEXT,
     -- Postal code
-    City               STRING  NOT NULL,
+    City               TEXT  NOT NULL,
     -- City
-    State              STRING  NOT NULL,
+    State              TEXT  NOT NULL,
     -- State or province
-    Country            STRING,
+    Country            TEXT,
     -- Postal country
-    Phone              STRING,
+    Phone              TEXT,
     -- Telephone number
-    Income             INT64,
+    Income             bigint,
     -- Annual income
-    NumberCars         INT64,
+    NumberCars         bigint,
     -- Cars owned
-    NumberChildren     INT64,
+    NumberChildren     bigint,
     -- Dependent children
-    MaritalStatus      STRING,
+    MaritalStatus      TEXT,
     -- S / M / D / W / U
-    Age                INT64,
+    Age                bigint,
     -- Current age
-    CreditRating       INT64,
+    CreditRating       bigint,
     -- Numeric rating
-    OwnOrRentFlag      STRING,
+    OwnOrRentFlag      TEXT,
     -- O / R / U
-    Employer           STRING,
+    Employer           TEXT,
     -- Name of employer
-    NumberCreditCards  INT64,
+    NumberCreditCards  bigint,
     -- Credit cards
-    NetWorth           INT64,
+    NetWorth           bigint,
     -- Estimated total net worth
-    MarketingNameplate STRING
+    MarketingNameplate TEXT
     -- For marketing purposes
 );

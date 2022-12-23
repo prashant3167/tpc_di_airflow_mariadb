@@ -28,16 +28,29 @@
 
 import xmltodict
 import pandas as pd
-
+from datetime import datetime
+from sqlalchemy import create_engine
+engine = create_engine("mysql+pymysql://tpcds:tpcds@host.docker.internal:3306/staging")
 
 def prepare_char_insertion(field):
     if field == None:
-        return ""
-    if field == "''":
         return None
+    if field == "''":
+        return ''
     # field = field.replace("'", "''")
     # field = field.replace('"', '\\"')
-    return f"{field}"
+    return field
+
+def prepare_non_null_char_insertion(field):
+    print(field)
+    if field == None:
+        return "test"
+    if field == "''":
+        return "jj"
+    # field = field.replace("'", "''")
+    # field = field.replace('"', '\\"')
+    return field
+# def pre
 
 
 def prepare_numeric_insertion(numeric):
@@ -45,14 +58,14 @@ def prepare_numeric_insertion(numeric):
         int(numeric)
         return numeric
     except:
-        return ""
+        return None
 
 
 s_customer_values = []
 
 
 def make_contact(ct_code, area_code, local_code, c_ext):
-    return f"""{ct_code if ct_code!=None else ''}{"("+area_code+")" if area_code!='' else ''}{local_code}{c_ext}"""
+    return f"""{ct_code if ct_code!=None else ''}{"("+area_code+")" if area_code!=None else ''}{local_code if local_code!=None else ""}{c_ext  if c_ext!=None else ""}"""
 
 
 def xml_to_csv(input_file, output_file):
@@ -102,7 +115,8 @@ def xml_to_csv(input_file, output_file):
         for action in actions:
             ActionType = prepare_char_insertion(action["@ActionType"])
             # print(ActionType)
-            ActionTS = prepare_char_insertion(action["@ActionTS"])
+            # print(action["@ActionTS"])
+            ActionTS = datetime.strptime(action["@ActionTS"],"%Y-%m-%dT%H:%M:%S")
             C_ID = prepare_numeric_insertion(action["Customer"]["@C_ID"])
             C_TAX_ID = (
                 C_GNDR
@@ -116,7 +130,8 @@ def xml_to_csv(input_file, output_file):
                 C_F_NAME
             ) = (
                 C_M_NAME
-            ) = C_ADLINE1 = C_ADLINE2 = C_ZIPCODE = C_CITY = C_STATE_PROV = C_CTRY = ""
+            ) = C_ADLINE1 = C_ADLINE2 = C_ZIPCODE = C_CITY = C_STATE_PROV = C_CTRY = None
+            C_TIER = None
             try:
                 C_TAX_ID = prepare_char_insertion(action["Customer"]["@C_TAX_ID"])
             except:
@@ -130,7 +145,7 @@ def xml_to_csv(input_file, output_file):
             except:
                 pass
             try:
-                C_DOB = prepare_char_insertion(action["Customer"]["@C_DOB"])
+                C_DOB = datetime.strptime(action["Customer"]["@C_DOB"],"%Y-%m-%d").date()
             except:
                 pass
             try:
@@ -164,9 +179,10 @@ def xml_to_csv(input_file, output_file):
             except:
                 pass
             try:
-                C_ZIPCODE = prepare_char_insertion(
-                    action["Customer"]["Address"]["C_ADLINE2"]
+                C_ZIPCODE = prepare_non_null_char_insertion(
+                    action["Customer"]["Address"]["C_ZIPCODE"]
                 )
+                # print(C_ZIPCODE)
             except:
                 pass
             try:
@@ -203,7 +219,7 @@ def xml_to_csv(input_file, output_file):
                 C_PHONE_3_C_AREA_CODE
             ) = (
                 C_PHONE_3_C_LOCAL
-            ) = C_PHONE_1_C_EXT = C_PHONE_2_C_EXT = C_PHONE_3_C_EXT = ""
+            ) = C_PHONE_1_C_EXT = C_PHONE_2_C_EXT = C_PHONE_3_C_EXT = None
             try:
                 C_PRIM_EMAIL = prepare_char_insertion(
                     action["Customer"]["ContactInfo"]["C_PRIM_EMAIL"]
@@ -288,7 +304,7 @@ def xml_to_csv(input_file, output_file):
                 )
             except:
                 pass
-            C_LCL_TX_ID = C_NAT_TX_ID = ""
+            C_LCL_TX_ID = C_NAT_TX_ID = None
             try:
                 C_LCL_TX_ID = prepare_char_insertion(
                     action["Customer"]["TaxInfo"]["C_LCL_TX_ID"]
@@ -298,28 +314,28 @@ def xml_to_csv(input_file, output_file):
                 )
             except:
                 pass
-            CA_ID = ""
+            CA_ID = None
             try:
                 CA_ID = prepare_numeric_insertion(
                     action["Customer"]["Account"]["@CA_ID"]
                 )
             except:
                 pass
-            CA_TAX_ST = ""
+            CA_TAX_ST = None
             try:
                 CA_TAX_ST = prepare_numeric_insertion(
                     action["Customer"]["Account"]["@CA_TAX_ST"]
                 )
             except:
                 pass
-            CA_B_ID = ""
+            CA_B_ID = None
             try:
                 CA_B_ID = prepare_numeric_insertion(
                     action["Customer"]["Account"]["CA_B_ID"]
                 )
             except:
                 pass
-            CA_NAME = ""
+            CA_NAME = None
             try:
                 CA_NAME = prepare_char_insertion(
                     action["Customer"]["Account"]["CA_NAME"]
@@ -488,7 +504,15 @@ def xml_to_csv(input_file, output_file):
         }
     )
     df["effective_time_stamp"] = pd.to_datetime(df["effective_time_stamp"])
-    df.to_csv(output_file, index=False, header=False, doublequote=True)
+    # df.to_csv(output_file, index=False, header=False, doublequote=True)
+    # print(df.PostalCode.drop_duplicates())
+    df.PostalCode = df.PostalCode.fillna('')
+    # C_ADLINE1
+    df.AddressLine1 = df.AddressLine1.fillna('')
+    df.City = df.City.fillna('')
+    df.State_Prov  = df.State_Prov.fillna('')
+    df.to_sql('customer_management',engine,if_exists='append',index=False)
+    
 
 
 # xml_to_csv('/Users/Licious/project/ulb/dw/di/data_3/Batch1/CustomerMgmt.xml','/Users/Licious/project/ulb/dw/di/data_3/Batch1/CustomerMgmt.csv')

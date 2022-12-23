@@ -1,0 +1,32 @@
+drop table staging.`customer_management`;
+
+CREATE TABLE staging.`customer_management` (
+    `Action` text DEFAULT NULL,
+    `effective_time_stamp` DATETIME DEFAULT NULL,
+    `CustomerID` INTEGER DEFAULT NULL,
+    `TAXID` text DEFAULT NULL,
+    `Gender` text DEFAULT NULL,
+    `TIER` INTEGER DEFAULT NULL,
+    `DOB` Date DEFAULT NULL,
+    `LastName` text DEFAULT NULL,
+    `FirstName` text DEFAULT NULL,
+    `MiddleInitial` text DEFAULT NULL,
+    `AddressLine1` text DEFAULT NULL,
+    `AddressLine2` text DEFAULT NULL,
+    `PostalCode` text NOT NULL,
+    `City` text NOT NULL,
+    `State_Prov` text NOT NULL,
+    `Country` text DEFAULT NULL,
+    `Email1` text DEFAULT NULL,
+    `Email2` text DEFAULT NULL,
+    `LocalTaxID` text DEFAULT NULL,
+    `NationalTaxID` text DEFAULT NULL,
+    `AccountID` integer DEFAULT NULL,
+    `TaxStatus` integer DEFAULT NULL,
+`BrokerID` integer DEFAULT NULL,
+    `AccountDesc` text DEFAULT NULL,
+    `Phone1` text DEFAULT NULL,
+    `Phone2` text DEFAULT NULL,
+    `Phone3` text DEFAULT NULL,
+    `Status` text DEFAULT NULL
+);
