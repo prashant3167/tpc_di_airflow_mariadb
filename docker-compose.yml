@@ -7,45 +7,50 @@ services:
             - POSTGRES_PASSWORD=airflow
             - POSTGRES_DB=airflow
     scheduler:
-        image: pacific31/airflow:2.5
+        image: airflow:2.6
         # entrypoint: "airflow scheduler"
-        entrypoint: /opt/airflow/scripts/entrypoint_scheduler.sh
+        entrypoint: bash -c 'airflow db init; airflow scheduler'
+        # entrypoint: /opt/airflow/scripts/entrypoint_scheduler.sh
         # restart_policy:
         #     condition: on-failure
         depends_on:
             - postgres
-            - initdb
+            # - initdb
         env_file:
             - .env
-        volumes:
-            - ./src/dags:/opt/airflow/dags
-            - ./logs:/opt/airflow/logs
-            - /Users/Licious/project/ulb/dw/di/data_3:/staging
-            - ./scripts:/opt/airflow/scripts
+        environment:
+            - AIRFLOW_CONN_MYSQL_DEFAULT=mysql://tpcds:tpcds@host.docker.internal:3306/master?%7B%22allow_local_infile%22%3A%20true%7D
+        # volumes:
+        #     - ./src/dags:/opt/airflow/dags
+        #     - ./logs:/opt/airflow/logs
+        #     - /Users/Licious/project/ulb/dw/di/data_3:/staging
+        #     - ./scripts:/opt/airflow/scripts
     webserver:
-        image: pacific31/airflow:2.5
+        image: airflow:2.6
         entrypoint: /opt/airflow/scripts/entrypoint.sh
         # restart_policy:
         #     condition: on-failure
         depends_on:
             - postgres
             - scheduler
-            - initdb
+            # - initdb
         env_file:
             - .env
-        volumes:
-            - ./src/dags:/opt/airflow/dags
-            - ./logs:/opt/airflow/logs
-            - ./scripts:/opt/airflow/scripts
+        environment:
+            - AIRFLOW_CONN_MYSQL_DEFAULT=mysql://tpcds:tpcds@host.docker.internal:3306/master?%7B%22allow_local_infile%22%3A%20true%7D
+        # volumes:
+        #     - ./src/dags:/opt/airflow/dags
+        #     - ./logs:/opt/airflow/logs
+        #     - ./scripts:/opt/airflow/scripts
         ports:
             - "8081:8080"
 
-    initdb:
-        image: pacific31/airflow:2.5
-        user: root
-        restart: "no"
-        volumes:
-            - ./src/dags:/opt/airflow/dags
-            - ./logs:/opt/airflow/logs
-            - ./scripts:/opt/airflow/scripts
-        entrypoint: ["bash", "-c", "chmod -R 777 /opt/airflow/"]
+    # initdb:
+    #     image: pacific31/airflow:2.5
+    #     user: root
+    #     restart: "no"
+    #     volumes:
+    #         - ./src/dags:/opt/airflow/dags
+    #         - ./logs:/opt/airflow/logs
+    #         - ./scripts:/opt/airflow/scripts
+    #     entrypoint: ["bash", "-c", "chmod -R 777 /opt/airflow/"]
