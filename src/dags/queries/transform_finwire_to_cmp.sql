@@ -3,19 +3,20 @@
 -- Multi record is parsed to constituent tables here we have done it for CMP, for format look at table + plus data
 -- casting done for easy loading to Dimension table later
 -- DATE_FORMAT(c.EffectiveDate, '%Y%m%d-%H%M%S')
-insert into {{ table }}
+
+delete from {{ params.table }};
+insert into {{ params.table }}
 SELECT
     STR_TO_DATE(SUBSTR(ROW, 1, 15), '%Y%m%d-%H%i%S') AS PTS,
     TRIM(SUBSTR(ROW, 19, 60)) AS CompanyName,
-    CAST(TRIM(SUBSTR(ROW, 79, 10)) AS INT64) AS CIK,
+    CAST(TRIM(SUBSTR(ROW, 79, 10)) AS int) AS CIK,
     TRIM(SUBSTR(ROW, 89, 4)) AS Status,
     TRIM(SUBSTR(ROW, 93, 2)) AS IndustryID,
     TRIM(SUBSTR(ROW, 95, 4)) AS SPrating,
     CASE
         WHEN TRIM(SUBSTR(ROW, 99, 8)) = '' THEN NULL
         ELSE
-            PARSE_DATE('%E4Y%m%d',
-                       TRIM(SUBSTR(ROW, 99, 8)))
+            STR_TO_DATE(TRIM(SUBSTR(ROW, 99, 8)), '%Y%m%d')
         END
         AS FoundingDate,
     TRIM(SUBSTR(ROW, 107, 80)) AS AddrLine1,

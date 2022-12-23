@@ -1,11 +1,11 @@
 INSERT INTO master.di_messages
 SELECT
-    CURRENT_DATETIME() AS MessageDateAndTime,
+    now() AS MessageDateAndTime,
     1 AS BatchID,
     "DimCompany" AS MessageSource,
     "Invalid SPRating" AS MessageText,
     "Alert" AS MessageType,
-    CONCAT(CONCAT("CO_ID=", '', CAST(CIK AS STRING)), ',', CONCAT("CO_SP_RATE=", '', SPrating)) AS MessageData
+    CONCAT("CO_ID=", CAST(CIK AS char), "CO_SP_RATE=", SPrating) AS MessageData
 FROM
     staging.cmp_records
 WHERE
