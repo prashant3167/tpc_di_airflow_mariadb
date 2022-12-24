@@ -3,6 +3,8 @@ from airflow import DAG
 from airflow.providers.mysql.operators.mysql import MySqlOperator
 # from airflow.operators.mysql_operator import MySqlOperator
 import os
+from airflow.providers.mysql.hooks.mysql import MySqlHook
+import re
 
 
 
@@ -44,6 +46,7 @@ class BulkLoadDataOperator(MySqlOperator):
         columns,
         db="staging",
         skip_rows=0,
+        mysql_conn_id ='mysql_default',
         **kwargs,
     ):
         self.table = table
@@ -52,20 +55,26 @@ class BulkLoadDataOperator(MySqlOperator):
         self.skip_rows = skip_rows
         self.columns = columns
         self.sql = "show tables;"
+        self.mysql_conn_id = mysql_conn_id
+        self.db = db
         super().__init__(sql=self.sql,**kwargs)
 
     def execute(self, context):
-        mysql = MysqlHook(mysql_conn_id=self.mysql_conn_id)
+        # mysql = MySqlHook(mysql_conn_id=self.mysql_conn_id)
+        hook = MySqlHook(mysql_conn_id=self.mysql_conn_id, schema=self.database)
+        # sql = "show tables;"
+        # result = hook.get_first(sql)
+        print(f"{self.db}.{self.table}")
         for fname in os.listdir(self.base_path):
-            mysql.run(f"""
-            LOAD DATA LOCAL INFILE '{self.base_path}/{fname}' INTO TABLE {self.db}.{self.table}
-            FIELDS
-                OPTIONALLY ENCLOSED BY '"'
-                TERMINATED BY '{self.delimiter}'
-            LINES
-                TERMINATED BY '\\n'
-            IGNORE {self.skip_rows} ROWS ({self.columns})
-            """)
+            if re.match(r"FINWIRE[0-9]{4}Q[1-4]$", fname):
+                print(fname)
+                hook.run(f"""LOAD DATA LOCAL INFILE '{self.base_path}/{fname}' INTO TABLE {self.db}.{self.table}
+                LINES
+                    TERMINATED BY '\\n'
+                IGNORE {self.skip_rows} ROWS ({self.columns})
+                """,
+                autocommit=True
+                )
         # super().execute(context)
 
 
