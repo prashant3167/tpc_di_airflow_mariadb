@@ -1,16 +1,19 @@
-delete from {{ table }};
-
 insert into {{ table }}
 WITH
-    sec_record_effective_date AS (
+    sec_record_effective_date_initial AS (
         SELECT
             *,
-            LEAD(PTS, 1, DATETIME('9999-12-31')) OVER (PARTITION BY Symbol ORDER BY PTS ASC) AS end_date_time
+            LEAD(PTS,1) OVER (PARTITION BY Symbol ORDER BY PTS ASC) AS end_date_time_initial
         FROM
-            staging.sec_records)
+            staging.sec_records),
+        sec_record_effective_date as(
+            select PTS,Symbol,IssueType,Status,Name,ExID,ShOut,FirstTradeDate,FirstTradeExchg,Dividend,CIK,CompanyName,case when end_date_time_initial is Null then DATE('9999-12-31') else end_date_time_initial end AS end_date_time from sec_record_effective_date_initial
+        )
 SELECT
-    FARM_FINGERPRINT(CONCAT(FORMAT_DATETIME('%E4Y%m%d',
-                                            sec.PTS), '', sec.Symbol)) AS SK_SecurityID,
+    -- FARM_FINGERPRINT(
+        CONCAT(DATE_FORMAT(sec.PTS, '%Y%m%d'), sec.Symbol)
+        -- )
+         AS SK_SecurityID,
     sec.Symbol AS Symbol,
     sec.IssueType AS Issue,
     st.ST_NAME AS Status,
