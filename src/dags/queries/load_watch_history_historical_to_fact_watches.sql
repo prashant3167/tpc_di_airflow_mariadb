@@ -1,3 +1,10 @@
+-- Need index
+CREATE INDEX DIM_CUS1_INDEX ON master.dim_customer(CustomerID);
+CREATE INDEX DIM_CUS2_INDEX ON master.dim_security(Symbol);
+CREATE INDEX DIM_CUS3_INDEX ON master.dim_date(DateValue);
+CREATE INDEX DIM_CUS4_INDEX ON master.dim_date(DateValue);
+
+insert into {{ params.table }}
 WITH watches AS (
     SELECT st.W_C_ID, TRIM(st.W_S_SYMB) AS W_S_SYMB, DATE(st.W_DTS) AS DatePlaced, DATE(en.W_DTS) AS DateRemoved
     FROM staging.watch_history_historical st
@@ -15,3 +22,9 @@ FROM watches w
          JOIN master.dim_security s ON w.W_S_SYMB = s.Symbol
          JOIN master.dim_date sd ON w.DatePlaced = sd.DateValue
          LEFT JOIN master.dim_date ed ON w.DateRemoved = ed.DateValue;
+
+-- Need index
+-- CREATE INDEX DIM_CUS1_INDEX ON master.dim_customer(CustomerID);
+-- CREATE INDEX DIM_CUS2_INDEX ON master.dim_security(Symbol);
+-- CREATE INDEX DIM_CUS3_INDEX ON master.dim_date(DateValue);
+-- CREATE INDEX DIM_CUS4_INDEX ON master.dim_date(DateValue);
