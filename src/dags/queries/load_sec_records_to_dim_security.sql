@@ -1,4 +1,4 @@
-insert into {{ table }}
+insert into master.dim_security
 WITH
     sec_record_effective_date_initial AS (
         SELECT

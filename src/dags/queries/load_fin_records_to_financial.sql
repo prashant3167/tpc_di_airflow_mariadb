@@ -1,6 +1,7 @@
-delete from {{ table }};
+delete from {{ params.table }};
 
-INSERT into {{table }}
+INSERT into {{ params.table }}
+INSERT into master.financial
 SELECT
   cmp.SK_CompanyID AS SK_CompanyID,
   fin.Year AS FI_YEAR,
