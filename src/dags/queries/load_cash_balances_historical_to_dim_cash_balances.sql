@@ -1,6 +1,6 @@
-delete from  {{ table }};
+delete from  master.fact_cash_balances;
 
-INSERT into {{ table }}
+INSERT into master.fact_cash_balances
 WITH cash_balance_day AS (
     SELECT CT_CA_ID, DATE(CT_DTS) AS TradeDate, SUM(CT_AMT) AS DayCash
     FROM staging.cash_transaction_historical
