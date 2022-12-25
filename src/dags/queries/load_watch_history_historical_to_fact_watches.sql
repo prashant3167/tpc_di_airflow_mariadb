@@ -1,3 +1,4 @@
+delete from master.fact_watches;
 WITH watches AS (
     SELECT st.W_C_ID, TRIM(st.W_S_SYMB) AS W_S_SYMB, DATE(st.W_DTS) AS DatePlaced, DATE(en.W_DTS) AS DateRemoved
     FROM staging.watch_history_historical st
@@ -5,6 +6,7 @@ WITH watches AS (
     WHERE st.W_ACTION = 'ACTV'
       AND en.W_ACTION = 'CNCL'
 )
+INSERT into master.fact_watches
 SELECT SK_CustomerID,
        SK_SecurityID,
        sd.SK_DateID AS SK_DateID_DatePlaced,

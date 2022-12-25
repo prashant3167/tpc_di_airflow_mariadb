@@ -1,6 +1,6 @@
-delete from {{ table }};
+delete from master.fact_holdings;
 
-INSERT into {{ table }}
+INSERT into master.fact_holdings
 SELECT h.HH_H_T_ID      AS TradeID,
        h.HH_T_ID        AS CurrentTradeID,
        t.SK_CustomerID,
