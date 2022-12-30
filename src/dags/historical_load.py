@@ -1,15 +1,12 @@
 from datetime import datetime
 
 from airflow import DAG
-from airflow.contrib.operators.gcs_to_bq import GoogleCloudStorageToBigQueryOperator
 from airflow.operators.bash_operator import BashOperator
 from airflow.operators.python_operator import PythonOperator
 from airflow.operators.empty import EmptyOperator
 
-from constants import CSV_EXTENSION, GCS_BUCKET, BIG_QUERY_CONN_ID, GOOGLE_CLOUD_DEFAULT
 from transformations.convert_customer_mgmt_xml_to_csv import xml_to_csv
-from utils import  get_file_path, insert_overwrite, reset_table, insert_if_empty, \
-    execute_sql
+from utils import  get_file_path, reset_table
 
 from operators import LoadDataOperator,BulkLoadDataOperator
 
@@ -26,7 +23,8 @@ default_args = {
     'email_on_failure': False,
     'email_on_retry': False,
     'retries': 3,
-    'max_active_runs':2
+    'max_active_runs':2,
+    'max_active_tasks':2
 }
 
 with DAG('my_historical_load', schedule_interval=None, default_args=default_args) as dag:
@@ -432,14 +430,15 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
  
 
     create_intermediary_table_daily_market = MySqlOperator(task_id='transform_to_52_week_stats',
-                                                                execution_timeout=timedelta(hours=3),
+                                                            execution_timeout=timedelta(hours=3),
                                                               sql='queries/transform_daily_market_historical_52_week.sql',
                                                                params={'table':'staging.daily_market_historical_transformed'})
 
-    recreate_fact_market_history = reset_table('fact_market_history')
+    # recreate_fact_market_history = reset_table('fact_market_history')
 
     load_fact_market_history_from_staging_market_history_transformed = MySqlOperator(
         task_id="load_fact_market_history_from_staging_market_history_transformed",
+        execution_timeout=timedelta(hours=3),
         sql='queries/load_fact_market_history_from_historical.sql',
          params={'table':'master.fact_market_history'})
 
@@ -448,6 +447,6 @@ with DAG('my_historical_load', schedule_interval=None, default_args=default_args
     [dimension_loading_complete,
      load_holding_history_historical_to_staging] >> recreate_fact_holdings >> load_fact_holding_from_staging_history
     [dimension_loading_complete,
-     load_watch_history_historical_to_staging] >> recreate_fact_watches >> load_fact_watches_from_staging_watch_history
+     load_watch_history_historical_to_staging] >> recreate_fact_watches >> load_fact_watches_from_staging_watch_history >> create_intermediary_table_daily_market
     [dimension_loading_complete,
-     load_daily_market_to_staging] >> create_intermediary_table_daily_market >> recreate_fact_market_history >> load_fact_market_history_from_staging_market_history_transformed
+     load_daily_market_to_staging] >> create_intermediary_table_daily_market >> load_fact_market_history_from_staging_market_history_transformed

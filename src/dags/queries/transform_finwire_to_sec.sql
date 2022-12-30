@@ -1,4 +1,4 @@
-delete from {{table}};
+delete from {{ params.table }};
 
 
 insert into {{ params.table }}

@@ -1,7 +1,7 @@
-create index cash_transaction_historical_index on staging.cash_transaction_historical(CT_CA_ID);
-create index dim_account_index on master.dim_account(AccountID);
+create index IF NOT EXISTS cash_transaction_historical_index on staging.cash_transaction_historical(CT_CA_ID);
+create index IF NOT EXISTS dim_account_index on master.dim_account(AccountID);
 
-INSERT into  {{ parmas.table }}
+INSERT into  {{ params.table }}
 WITH cash_balance_day AS (
     SELECT CT_CA_ID, DATE(CT_DTS) AS TradeDate, SUM(CT_AMT) AS DayCash
     FROM staging.cash_transaction_historical

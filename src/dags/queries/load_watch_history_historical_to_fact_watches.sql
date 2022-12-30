@@ -1,8 +1,9 @@
 -- Need index
-CREATE INDEX DIM_CUS1_INDEX ON master.dim_customer(CustomerID);
-CREATE INDEX DIM_CUS2_INDEX ON master.dim_security(Symbol);
-CREATE INDEX DIM_CUS3_INDEX ON master.dim_date(DateValue);
-CREATE INDEX DIM_CUS4_INDEX ON master.dim_date(DateValue);
+CREATE INDEX IF NOT EXISTS DIM_CUS1_INDEX ON master.dim_customer(CustomerID);
+CREATE INDEX IF NOT EXISTS DIM_CUS2_INDEX ON master.dim_security(Symbol);
+CREATE INDEX IF NOT EXISTS DIM_CUS3_INDEX ON master.dim_date(DateValue);
+CREATE INDEX IF NOT EXISTS DIM_CUS4_INDEX ON master.dim_date(DateValue);
+CREATE INDEX IF NOT EXISTS watch_history_INDEX ON staging.watch_history_historical(W_C_ID,W_S_SYMB) using hash;
 
 insert into {{ params.table }}
 WITH watches AS (

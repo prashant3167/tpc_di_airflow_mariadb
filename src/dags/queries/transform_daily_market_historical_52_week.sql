@@ -1,72 +1,51 @@
 
-delete from {{ table }};
+create index IF NOT EXISTS daily_market_historical_ind on staging.daily_market_historical(DM_DATE);
+create index IF NOT EXISTS daily_market_historical2_ind on staging.daily_market_historical(DM_S_SYMB);
+create index IF NOT EXISTS daily_market_historical3_ind on staging.daily_market_with_date(DM_S_SYMB,DM_DATE);
+create index IF NOT EXISTS dim_date_index on master.dim_date(DateValue);
 
-INSERT into {{ table }}
-WITH daily_market_with_date AS (
-    SELECT h.*,
-           d.SK_DateID
-    FROM staging.daily_market_historical h
-             JOIN
-         master.dim_date d
-         ON
-             h.DM_DATE = d.DateValue),
-     year_range AS (
-         SELECT l.DM_S_SYMB,
-                l.DM_DATE,
-                l.SK_DateID,
-                l.DM_CLOSE,
-                l.DM_HIGH,
-                l.DM_LOW,
-                l.DM_VOL,
-                r.DM_HIGH   AS o_high,
-                r.DM_LOW    AS o_low,
-                r.DM_DATE   AS o_date,
-                r.SK_DateID AS o_SK_DateID
-         FROM daily_market_with_date l
-                  JOIN
-              daily_market_with_date r
-              ON
-                      l.DM_S_SYMB = r.DM_S_SYMB
-                      AND r.DM_DATE <= l.DM_DATE
-                      AND r.DM_DATE > DATE_SUB(l.DM_DATE, INTERVAL 1 YEAR)),
-     min_dm AS (
-         SELECT DM_S_SYMB,
-                DM_DATE,
-                SK_DateID,
-                DM_CLOSE,
-                DM_HIGH,
-                DM_LOW,
-                DM_VOL,
-                o_low       AS FiftyTwoWeekLow,
-                o_SK_DateID AS SK_FiftyTwoWeekLowDate
-         FROM (
-                  SELECT *,
-                         ROW_NUMBER() OVER (PARTITION BY DM_S_SYMB, DM_DATE ORDER BY o_low ASC, o_date ASC) AS row_num
-                  FROM year_range) a
-         WHERE row_num = 1),
-     max_dm AS (
-         SELECT DM_S_SYMB,
-                DM_DATE,
-                o_high      AS FiftyTwoWeekHigh,
-                o_SK_DateID AS SK_FiftyTwoWeekHighDate
-         FROM (
-                  SELECT *,
-                         ROW_NUMBER() OVER (PARTITION BY DM_S_SYMB, DM_DATE ORDER BY o_high DESC, o_date ASC) AS row_num
-                  FROM year_range) a
-         WHERE row_num = 1)
-SELECT mn.DM_S_SYMB,
-       mn.DM_DATE,
-       mn.DM_HIGH,
-       mn.DM_LOW,
-       mn.DM_VOL,
-       mn.DM_CLOSE,
-       FiftyTwoWeekLow,
-       SK_FiftyTwoWeekLowDate,
-       FiftyTwoWeekHigh,
-       SK_FiftyTwoWeekHighDate
-FROM max_dm mx
-         JOIN
-     min_dm mn
-     ON
-             mx.DM_S_SYMB = mn.DM_S_SYMB
-             AND mx.DM_DATE = mn.DM_DATE;
+
+drop table IF EXISTS staging.t_all_v2; -- Clean up
+
+CREATE TABLE if not exists staging.t_all_v2 (
+    `DM_S_SYMB` char(30) NOT NULL,
+    `DM_DATE` date NOT NULL,
+    `SK_DateID` int(11) NOT NULL,
+    `DM_CLOSE` decimal(4, 0) NOT NULL,
+    `DM_HIGH` decimal(4, 0) NOT NULL,
+    `DM_LOW` decimal(4, 0) NOT NULL,
+    `DM_VOL` int(11) NOT NULL,
+    `high` bigint DEFAULT NULL,
+    `low` bigint DEFAULT NULL
+);
+
+
+insert into staging.t_all_v2
+with t_all as (SELECT
+    h.*,
+    d.SK_DateID
+FROM
+    staging.daily_market_historical h
+    JOIN master.dim_date d ON h.DM_DATE = d.DateValue)
+SELECT
+    l.DM_S_SYMB,
+    l.DM_DATE,
+    l.SK_DateID,
+    l.DM_CLOSE,
+    l.DM_HIGH,
+    l.DM_LOW,
+    l.DM_VOL,
+    max(DM_HIGH*100000000+SK_DateID) over(
+        partition by DM_S_SYMB
+        order by
+            DM_DATE rows between 363 preceding
+            and current row
+    ) as high,
+     min(DM_LOW*100000000+SK_DateID) over(
+        partition by DM_S_SYMB
+        order by
+            DM_DATE rows between 363 preceding
+            and current row
+    ) as low
+FROM
+    t_all l;

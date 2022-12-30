@@ -9,11 +9,10 @@ services:
     scheduler:
         image: pacific31/airflow:2.6
         container_name: scheduler
+        restart: always
         # entrypoint: "airflow scheduler"
         entrypoint: bash -c 'airflow db init; airflow scheduler'
         # entrypoint: /opt/airflow/scripts/entrypoint_scheduler.sh
-        # restart_policy:
-        #     condition: on-failure
         depends_on:
             - postgres
             # - initdb
@@ -21,17 +20,17 @@ services:
             - .env
         environment:
             - AIRFLOW_CONN_MYSQL_DEFAULT=mysql://tpcds:tpcds@host.docker.internal:3306/master?%7B%22allow_local_infile%22%3A%20true%7D
-        # volumes:
-        #     - ./src/dags:/opt/airflow/dags
-        #     - ./logs:/opt/airflow/logs
-        #     - /Users/Licious/project/ulb/dw/di/data_3:/staging
+            - AIRFLOW_CONN_MYSQL_CLOUD=mysql://DB00008858:Pac@3101@tpc-di-v2-db00008858.mdb0002659.db.skysql.net:5001/staging?%7B%22charset%22%3A%20%22utf8%22%2C%20%22cursor%22%3A%20%22sscursor%22%2C%20%22local_infile%22%3A%20true%2C%20%22ssl%22%3A%20%7B%22ca%22%3A%20%22%2Fskysql_chain.pem%22%7D%7D
+        volumes:
+            - ./src/dags:/opt/airflow/dags
+            - ./logs:/opt/airflow/logs
+            - /Users/Licious/project/ulb/dw/di/tpcdi-kit/Tools/data/7:/staging
         #     - ./scripts:/opt/airflow/scripts
     webserver:
         image: pacific31/airflow:2.6
         container_name: web
+        restart: always
         entrypoint: /opt/airflow/scripts/entrypoint.sh
-        # restart_policy:
-        #     condition: on-failure
         depends_on:
             - postgres
             - scheduler
@@ -40,9 +39,10 @@ services:
             - .env
         environment:
             - AIRFLOW_CONN_MYSQL_DEFAULT=mysql://tpcds:tpcds@host.docker.internal:3306/master?%7B%22allow_local_infile%22%3A%20true%7D
-        # volumes:
-        #     - ./src/dags:/opt/airflow/dags
-        #     - ./logs:/opt/airflow/logs
+            - AIRFLOW_CONN_MYSQL_CLOUD=mysql://DB00008858:Pac@3101@tpc-di-v2-db00008858.mdb0002659.db.skysql.net:5001/staging?%7B%22charset%22%3A%20%22utf8%22%2C%20%22cursor%22%3A%20%22sscursor%22%2C%20%22local_infile%22%3A%20true%2C%20%22ssl%22%3A%20%7B%22ca%22%3A%20%22%2Fskysql_chain.pem%22%7D%7D
+        volumes:
+            - ./src/dags:/opt/airflow/dags
+            - ./logs:/opt/airflow/logs
         #     - ./scripts:/opt/airflow/scripts
         ports:
             - "8081:8080"

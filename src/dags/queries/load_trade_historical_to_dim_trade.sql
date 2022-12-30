@@ -243,7 +243,7 @@ select
     T.BatchID
 from
     final_merge T
-    inner join master.dim_account A on T.T_CA_ID = a.AccountID
+    inner join master.dim_account A on T.T_CA_ID = A.AccountID
     and TH_DTS >= A.EffectiveDate
     and TH_DTS < A.EndDate;
 

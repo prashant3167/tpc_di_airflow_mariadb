@@ -14,5 +14,6 @@ CREATE TABLE master.dim_security (
     IsCurrent BOOLEAN NOT NULL,
     BatchID integer NOT NULL,
     EffectiveDate DATE NOT NULL,
-    EndDate DATE NOT NULL
+    EndDate DATE NOT NULL,
+    KEY `DIM_CUS2_INDEX` (`Symbol`(768))
 );
